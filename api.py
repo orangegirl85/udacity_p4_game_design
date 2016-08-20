@@ -7,10 +7,13 @@ from protorpc import remote, messages
 
 from models import User, Game
 from models import StringMessage, NewGameForm, GameForm
+from utils import get_by_urlsafe
 
 NEW_GAME_REQUEST = endpoints.ResourceContainer(NewGameForm)
 USER_REQUEST = endpoints.ResourceContainer(user_name=messages.StringField(1),
                                            email=messages.StringField(2))
+GET_GAME_REQUEST = endpoints.ResourceContainer(
+        urlsafe_game_key=messages.StringField(1),)
 
 @endpoints.api(name='tic_tac_toe', version='v1')
 class TicTacToeApi(remote.Service):
@@ -51,5 +54,18 @@ class TicTacToeApi(remote.Service):
         game = Game.new_game(user1.key, user2.key)
 
         return game.to_form('Good luck playing Tic Tac Toe!')
+
+    @endpoints.method(request_message=GET_GAME_REQUEST,
+                      response_message=GameForm,
+                      path='game/{urlsafe_game_key}',
+                      name='get_game',
+                      http_method='GET')
+    def get_game(self, request):
+        """Return the current game state."""
+        game = get_by_urlsafe(request.urlsafe_game_key, Game)
+        if game:
+            return game.to_form('Time to make a move!')
+        else:
+            raise endpoints.NotFoundException('Game not found!')
 
 api = endpoints.api_server([TicTacToeApi])

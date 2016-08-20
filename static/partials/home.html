@@ -5,15 +5,59 @@
             <button ng-click="createUser()" class="btn btn-primary">Create User</button>
         </div>
     </div>
+    <div class="col-sm-3 col-md-3 col-sm-offset-6 col-md-offset-6">
+        <div ng-controller="ModalNewGameCtrl" ng-if="!currentGameKey" class="pull-right">
+            <button ng-click="newGame()" class="btn btn-primary">New Game</button>
+        </div>
+
+        <div ng-if="currentGameKey" class="pull-right">
+            <button ng-click="getGame(currentGameKey)" class="btn btn-primary">Show Game</button>
+        </div>
+    </div>
 </div>
 
 <hr/>
-<div class="row">
-    <div class="col-sm-3 col-md-3">
-        <div ng-controller="ModalNewGameCtrl">
-            <button ng-click="newGame()" class="btn btn-primary">New Game</button>
-        </div>
+
+<div ng-if="table && table.urlsafe_game_key">
+    <div id="players">
+      <div id="X" ng-class="{ 'current-player': current_player=='PLAYER_X'}">Player X</div>
+      <div id="O" ng-class="{ 'current-player': current_player=='PLAYER_O'}">Player O</div>
     </div>
+    <table>
+      <tr>
+        <td ng-click="makeMove(0)" id="0">
+            <div ng-class="getContent(0)"></div>
+        </td>
+        <td ng-click="makeMove(1)" id="1">
+            <div ng-class="getContent(1)"></div>
+        </td>
+        <td ng-click="makeMove(2)" id="2">
+            <div ng-class="getContent(2)"></div>
+        </td>
+      </tr>
+      <tr>
+        <td ng-click="makeMove(3)" id="3">
+            <div ng-class="getContent(3)"></div>
+        </td>
+        <td ng-click="makeMove(4)" id="4">
+            <div ng-class="getContent(4)"></div>
+        </td>
+        <td ng-click="makeMove(5)" id="5">
+            <div ng-class="getContent(5)"></div>
+        </td>
+      </tr>
+      <tr>
+        <td ng-click="makeMove(6)" id="6">
+            <div ng-class="getContent(6)"></div>
+        </td>
+        <td ng-click="makeMove(7)" id="7">
+            <div ng-class="getContent(7)"></div>
+        </td>
+        <td ng-click="makeMove(8)" id="8">
+            <div ng-class="getContent(8)"></div>
+        </td>
+      </tr>
+    </table>
 </div>
 
 

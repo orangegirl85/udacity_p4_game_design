@@ -15,7 +15,7 @@ var ticTacToeApp = ticTacToeApp || {};
  * Angular module for controllers.
  *
  */
-ticTacToeApp.controllers = angular.module('ticTacToeControllers', ['ui.bootstrap']);
+ticTacToeApp.controllers = angular.module('ticTacToeControllers', ['ui.bootstrap', 'LocalStorageModule']);
 
 
 /**
@@ -119,7 +119,7 @@ ticTacToeApp.controllers.controller('ModalNewGameCtrl', function($scope, $modal,
  * Controller for creating a New Game.
  *
  */
-ticTacToeApp.controllers.controller('NewGameInstanceCtrl', function($scope, $modalInstance, $log){
+ticTacToeApp.controllers.controller('NewGameInstanceCtrl', function($scope, $modalInstance, $log, localStorageService){
     $scope.new_game = $scope.new_game || {};
 
     $scope.submit = function (form) {
@@ -142,6 +142,7 @@ ticTacToeApp.controllers.controller('NewGameInstanceCtrl', function($scope, $mod
                             // The request has succeeded.
                             $scope.messages = 'New game has been created! Players : ' + resp.result.user_name1 + ' ' + resp.result.user_name2;
                             $scope.alertStatus = 'success';
+                            localStorageService.set('game_url_key', resp.result.urlsafe_key);
                             $scope.new_game = {};
                             $log.info($scope.messages + ' : ' + JSON.stringify(resp.result));
                         }
@@ -160,11 +161,45 @@ ticTacToeApp.controllers.controller('NewGameInstanceCtrl', function($scope, $mod
  * @name RootCtrl
  *
  * @description
- * The root controller having a scope of the body element and methods used in the application wide
- * such as user authentications.
+ * The root controller having a scope of the body element and methods used in the application wide.
  *
  */
-ticTacToeApp.controllers.controller('RootCtrl', function ($scope) {
-    $scope.title = 'Tic Tac Toe';
+ticTacToeApp.controllers.controller('RootCtrl', function ($scope, $log, localStorageService) {
+    $scope.table = $scope.table || {};
+
+    $scope.current_player = $scope.current_player || 'PLAYER_X';
+    $scope.board = $scope.board || ['', '', '', '', '', '', '', '', ''];
+
+    $scope.$watch(function(){
+      return localStorageService.get('game_url_key');
+    }, function(value){
+      $scope.currentGameKey = value;
+    });
+
+    $scope.getGame = function(urlsafe_key) {
+        gapi.client.tic_tac_toe.get_game({urlsafe_game_key: urlsafe_key}).
+            execute(function (resp) {
+                $scope.$apply(function () {
+                    if (resp.error) {
+                        // The request has failed.
+                        var errorMessage = resp.error.message || '';
+                        $scope.messages = 'Failed to get game : ' + errorMessage;
+                        $scope.alertStatus = 'warning';
+                        $log.error($scope.messages );
+                    } else {
+                        // The request has succeeded.
+                        $scope.messages = 'Get game succeded : ' + resp.result.message;
+                        $scope.alertStatus = 'success';
+                        $scope.table = {
+                            urlsafe_game_key: resp.result.urlsafe_key,
+                            current_player: resp.result.current_player
+                        };
+                        $log.info($scope.messages + ' : ' + JSON.stringify(resp.result));
+
+                    }
+                });
+            });
+
+    }
 });
 
