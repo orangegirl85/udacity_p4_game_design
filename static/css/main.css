@@ -44,15 +44,15 @@ td {
   color: black !important;
   -webkit-transform: scale(1.5);
 }
-.X-marker {
+.PLAYER_X {
   color: #663366;
 }
-.X-marker:before {
+.PLAYER_X:before {
   content: "X";
 }
-.O-marker {
+.PLAYER_O {
   color: #CC0033;
 }
-.O-marker:before {
+.PLAYER_O:before {
   content: "O";
 }

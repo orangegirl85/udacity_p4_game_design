@@ -95,9 +95,9 @@ ticTacToeApp.controllers.controller('CreateUserInstanceCtrl', function($scope, $
  * Controller for showing New Game Modal.
  *
  */
-ticTacToeApp.controllers.controller('ModalNewGameCtrl', function($scope, $modal, $log){
-
+ticTacToeApp.controllers.controller('ModalNewGameCtrl', function($scope, $modal, $log, $element){
     $scope.newGame = function() {
+        $scope.$emit('remove-table');
         var modalInstance = $modal.open({
           templateUrl: '/partials/new-game.html',
           controller: 'NewGameInstanceCtrl'
@@ -177,6 +177,9 @@ ticTacToeApp.controllers.controller('RootCtrl', function ($scope, $log, localSto
     });
 
     $scope.getGame = function(urlsafe_key) {
+        /**
+        * Invokes the tic_tac_toe.get_game method.
+        */
         gapi.client.tic_tac_toe.get_game({urlsafe_game_key: urlsafe_key}).
             execute(function (resp) {
                 $scope.$apply(function () {
@@ -201,5 +204,46 @@ ticTacToeApp.controllers.controller('RootCtrl', function ($scope, $log, localSto
             });
 
     }
+
+    $scope.makeMove = function (position) {
+
+        $scope.table.position = position;
+        gapi.client.tic_tac_toe.make_move($scope.table).
+            execute(function (resp) {
+                $scope.$apply(function () {
+                    if (resp.error) {
+                        // The request has failed.
+                        var errorMessage = resp.error.message || '';
+                        $scope.messages = 'Failed to make a move : ' + errorMessage;
+                        $scope.alertStatus = 'warning';
+                        $log.error($scope.messages + ' make a move : ' + JSON.stringify($scope.guessANumber));
+
+                    } else {
+                        // The request has succeeded.
+                        $scope.messages = 'Result: ' + resp.result.message;
+                        $scope.alertStatus = 'success';
+                        $scope.current_player = resp.result.current_player;
+                        $scope.board = resp.result.board;
+                        if (resp.result.game_over) {
+                            localStorageService.remove('game_url_key')
+                        }
+                        $log.info($scope.messages + ' : ' + JSON.stringify(resp.result));
+                    }
+                });
+            });
+    };
+
+    $scope.getContent = function(index) {
+        if ($scope.board && $scope.board[index] == 'PLAYER_X')
+            return 'PLAYER_X';
+        if ($scope.board && $scope.board[index] == 'PLAYER_O')
+            return 'PLAYER_O';
+        return '';
+    }
+
+    $scope.$on('remove-table', function(){
+        $scope.table = {};
+        $scope.board = {};
+    })
 });
 

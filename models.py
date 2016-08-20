@@ -45,6 +45,13 @@ class Game(ndb.Model):
         form.message = message
         return form
 
+    def end_game(self):
+        """Ends the game"""
+        self.game_over = True
+        #self.current_player = 'PLAYER_X'
+        self.put()
+
+
 
 class GameForm(messages.Message):
     """GameForm for outbound game state information"""
@@ -61,3 +68,8 @@ class NewGameForm(messages.Message):
     """Used to create a new game"""
     user_name1 = messages.StringField(1, required=True)
     user_name2 = messages.StringField(2, required=True)
+
+
+class MakeMoveForm(messages.Message):
+    """Used to make a move in an existing game"""
+    position = messages.IntegerField(1, required=True)
