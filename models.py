@@ -21,14 +21,13 @@ class Game(ndb.Model):
     game_over = ndb.BooleanProperty(required=True, default=False)
     current_player = ndb.StringProperty(default='PLAYER_X')
     board = ndb.StringProperty(repeated=True)
+    cancelled = ndb.BooleanProperty(required=True, default=False)
 
     @classmethod
     def new_game(cls, user1, user2):
         """Creates and returns a new game"""
         game = Game(user1=user1,
                     user2=user2,
-                    game_over=False,
-                    current_player='PLAYER_X',
                     board=['', '', '', '', '', '', '', '', ''])
         game.put()
         return game
@@ -42,6 +41,7 @@ class Game(ndb.Model):
         form.current_player = self.current_player
         form.board = self.board
         form.game_over = self.game_over
+        form.cancelled = self.cancelled
         form.message = message
         return form
 
@@ -49,6 +49,11 @@ class Game(ndb.Model):
         """Ends the game"""
         self.game_over = True
         #self.current_player = 'PLAYER_X'
+        self.put()
+
+    def cancel_game(self):
+        """Ends the game"""
+        self.cancelled = True
         self.put()
 
 
@@ -62,6 +67,7 @@ class GameForm(messages.Message):
     user_name2 = messages.StringField(5, required=True)
     current_player = messages.StringField(6, required=True)
     board = messages.StringField(7, repeated=True)
+    cancelled = messages.BooleanField(8, required=True)
 
 
 class NewGameForm(messages.Message):

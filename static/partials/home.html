@@ -18,19 +18,21 @@
 
 <hr/>
 
-<div ng-if="table && table.urlsafe_game_key">
-    <div class="row">
-        <div class="col-lg-12">
-            <div id="messages" class="alert alert-{{alertStatus}}" ng-show="messages">
-                <span ng-bind="messages"></span>
-                <i class="dismiss-messages pull-right glyphicon glyphicon-remove" ng-click="messages = ''"
-                   ng-show="messages"></i>
-            </div>
+<div class="row">
+    <div class="col-lg-12">
+        <div id="messages" class="alert alert-{{alertStatus}}" ng-show="messages">
+            <span ng-bind="messages"></span>
+            <i class="dismiss-messages pull-right glyphicon glyphicon-remove" ng-click="messages = ''"
+               ng-show="messages"></i>
         </div>
     </div>
+</div>
+<div ng-if="table && table.urlsafe_game_key">
+
     <div id="players">
       <div id="X" ng-class="{ 'current-player': current_player=='PLAYER_X'}">Player X</div>
       <div id="O" ng-class="{ 'current-player': current_player=='PLAYER_O'}">Player O</div>
+        <button ng-click="cancelGame(currentGameKey)" class="btn btn-warning">Cancel</button>
     </div>
     <table>
       <tr>

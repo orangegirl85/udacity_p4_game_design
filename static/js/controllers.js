@@ -205,6 +205,34 @@ ticTacToeApp.controllers.controller('RootCtrl', function ($scope, $log, localSto
 
     }
 
+    $scope.cancelGame = function(urlsafe_key) {
+        /**
+        * Invokes the tic_tac_toe.cancel_game method.
+        */
+        gapi.client.tic_tac_toe.cancel_game({urlsafe_game_key: urlsafe_key}).
+            execute(function (resp) {
+                $scope.$apply(function () {
+                    if (resp.error) {
+                        // The request has failed.
+                        var errorMessage = resp.error.message || '';
+                        $scope.messages = 'Failed to cancel game : ' + errorMessage;
+                        $scope.alertStatus = 'warning';
+                        $log.error($scope.messages );
+                    } else {
+                        // The request has succeeded.
+                        $scope.messages = resp.result.message;
+                        $scope.alertStatus = 'success';
+                        localStorageService.remove('game_url_key');
+                        $scope.table = {};
+                        $scope.board = {};
+                        $log.info($scope.messages + ' : ' + JSON.stringify(resp.result));
+
+                    }
+                });
+            });
+
+    }
+
     $scope.makeMove = function (position) {
 
         $scope.table.position = position;
@@ -225,7 +253,7 @@ ticTacToeApp.controllers.controller('RootCtrl', function ($scope, $log, localSto
                         $scope.current_player = resp.result.current_player;
                         $scope.board = resp.result.board;
                         if (resp.result.game_over) {
-                            localStorageService.remove('game_url_key')
+                            localStorageService.remove('game_url_key');
                         }
                         $log.info($scope.messages + ' : ' + JSON.stringify(resp.result));
                     }

@@ -18,6 +18,9 @@ MAKE_MOVE_REQUEST = endpoints.ResourceContainer(
     MakeMoveForm,
     urlsafe_game_key=messages.StringField(1),)
 
+CANCEL_GAME_REQUEST = endpoints.ResourceContainer(
+        urlsafe_game_key=messages.StringField(1),)
+
 @endpoints.api(name='tic_tac_toe', version='v1')
 class TicTacToeApi(remote.Service):
     """Game API"""
@@ -68,6 +71,20 @@ class TicTacToeApi(remote.Service):
         game = get_by_urlsafe(request.urlsafe_game_key, Game)
         if game:
             return game.to_form('Time to make a move!')
+        else:
+            raise endpoints.NotFoundException('Game not found!')
+
+    @endpoints.method(request_message=CANCEL_GAME_REQUEST,
+                      response_message=GameForm,
+                      path='game/cancel/{urlsafe_game_key}',
+                      name='cancel_game',
+                      http_method='PUT')
+    def cancel_game(self, request):
+        """Return the current game state."""
+        game = get_by_urlsafe(request.urlsafe_game_key, Game)
+        if game:
+            game.cancel_game()
+            return game.to_form('Game has been cancelled!')
         else:
             raise endpoints.NotFoundException('Game not found!')
 
