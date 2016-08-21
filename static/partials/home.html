@@ -33,6 +33,19 @@
 
 <hr/>
 <div class="row">
+    <div class="col-sm-3 col-md-3" ng-controller="UserRankingsCtrl">
+        <button ng-click="getUserRankings()" class="btn btn-primary">Get User Rankings</button>
+        <ul ng-if="user_rankings.length">
+            <li ng-repeat="item in user_rankings">
+                <span> {{item.user_name}}</span><br/>
+                <span> {{item.score}}</span><br/>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<hr/>
+<div class="row">
     <div class="col-lg-12">
         <div id="messages" class="alert alert-{{alertStatus}}" ng-show="messages">
             <span ng-bind="messages"></span>

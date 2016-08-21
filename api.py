@@ -6,7 +6,7 @@ import endpoints
 from protorpc import remote, messages
 
 from models import User, Game, Score
-from models import StringMessage, NewGameForm, GameForm, MakeMoveForm, ScoreForms
+from models import StringMessage, NewGameForm, GameForm, MakeMoveForm, ScoreForms, UserRankingForm, UserRankingsForm
 from utils import get_by_urlsafe
 
 NEW_GAME_REQUEST = endpoints.ResourceContainer(NewGameForm)
@@ -87,6 +87,16 @@ class TicTacToeApi(remote.Service):
                     'A User with that name does not exist!')
         scores = Score.query(Score.user == user.key)
         return ScoreForms(items=[score.to_form() for score in scores])
+
+
+    @endpoints.method(response_message=UserRankingsForm,
+                      path='user/ranking',
+                      name='get_user_rankings',
+                      http_method='GET')
+    def get_user_rankings(self, request):
+        """Return the current game state."""
+        rankings = User.query().order(-User.score)
+        return UserRankingsForm(items=[ranking.to_form() for ranking in rankings])
 
     @endpoints.method(request_message=CANCEL_GAME_REQUEST,
                       response_message=GameForm,

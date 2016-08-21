@@ -193,6 +193,43 @@ ticTacToeApp.controllers.controller('UserGamesCtrl', function($scope, $log){
     };
 });
 
+
+/**
+ * @ngdoc controller
+ * @name UserRankingsCtrl
+ *
+ * @description
+ * ???.
+ *
+ */
+ticTacToeApp.controllers.controller('UserRankingsCtrl', function($scope, $log){
+    $scope.user_rankings = $scope.user_rankings || {};
+    $scope.getUserRankings = function() {
+        /**
+        * Invokes the tic_tac_toe.get_user_rankings method.
+        */
+        gapi.client.tic_tac_toe.get_user_rankings().
+            execute(function (resp) {
+                $scope.$apply(function () {
+                    if (resp.error) {
+                        // The request has failed.
+                        var errorMessage = resp.error.message || '';
+                        $scope.messages = 'Failed to get user rankings : ' + errorMessage;
+                        $scope.alertStatus = 'warning';
+                        $log.error($scope.messages );
+                    } else {
+                        // The request has succeeded.
+                        $scope.messages = 'Successful';
+                        $scope.alertStatus = 'success';
+                        $scope.user_rankings = resp.result.items;
+                        $log.info($scope.messages + ' : ' + JSON.stringify(resp.result));
+
+                    }
+                });
+            });
+    };
+});
+
 /**
  * @ngdoc controller
  * @name RootCtrl

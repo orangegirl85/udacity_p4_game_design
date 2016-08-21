@@ -10,6 +10,10 @@ class User(ndb.Model):
     """User profile"""
     name = ndb.StringProperty(required=True)
     email =ndb.StringProperty()
+    score = ndb.IntegerProperty(default=0)
+
+    def to_form(self):
+        return UserRankingForm(user_name=self.name, score=self.score)
 
 class StringMessage(messages.Message):
     """StringMessage-- outbound (single) string message"""
@@ -57,19 +61,27 @@ class Game(ndb.Model):
             self._add_game_to_score(self.user2, won)
         else:
             if self.current_player == 'PLAYER_X':
-                self._add_game_to_score(self.user1, True)
+                self._add_game_to_score(self.user1, True,)
                 self._add_game_to_score(self.user2, False)
-
+                self._update_user_score(self.user1, 1)
+                self._update_user_score(self.user2, -1)
             else:
                 self._add_game_to_score(self.user1, False)
                 self._add_game_to_score(self.user2, True)
+                self._update_user_score(self.user1, -1)
+                self._update_user_score(self.user2, 1)
 
     def _add_game_to_score(self, user, won):
         score = Score(user=user, date=datetime.today(), won=won)
         score.put()
 
+    def _update_user_score(self, user, score):
+        user11 = User.query(User.name == user.get().name).get()
+        user11.score += score
+        user11.put()
+
     def cancel_game(self):
-        """Ends the game"""
+        """Cancels the game"""
         self.cancelled = True
         self.put()
 
@@ -105,6 +117,16 @@ class MakeMoveForm(messages.Message):
     """Used to make a move in an existing game"""
     position = messages.IntegerField(1, required=True)
 
+
+class UserRankingForm(messages.Message):
+    """UserRankingForm for outbound Score information"""
+    user_name = messages.StringField(1, required=True)
+    score = messages.IntegerField(2, required=True)
+
+
+class UserRankingsForm(messages.Message):
+    """Return multiple UserRankingsForms"""
+    items = messages.MessageField(UserRankingForm, 1, repeated=True)
 
 class ScoreForm(messages.Message):
     """ScoreForm for outbound Score information"""
