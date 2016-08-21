@@ -2,6 +2,7 @@
 entities used by the Game. Because these classes are also regular Python
 classes they can include methods (such as 'to_form' and 'new_game')."""
 
+from datetime import date, datetime
 from google.appengine.ext import ndb
 from protorpc import messages
 
@@ -45,18 +46,42 @@ class Game(ndb.Model):
         form.message = message
         return form
 
-    def end_game(self):
+    def end_game(self, draw=False):
         """Ends the game"""
         self.game_over = True
-        #self.current_player = 'PLAYER_X'
         self.put()
+
+        if draw:
+            won = False
+            self._add_game_to_score(self.user1, won)
+            self._add_game_to_score(self.user2, won)
+        else:
+            if self.current_player == 'PLAYER_X':
+                self._add_game_to_score(self.user1, True)
+                self._add_game_to_score(self.user2, False)
+
+            else:
+                self._add_game_to_score(self.user1, False)
+                self._add_game_to_score(self.user2, True)
+
+    def _add_game_to_score(self, user, won):
+        score = Score(user=user, date=datetime.today(), won=won)
+        score.put()
 
     def cancel_game(self):
         """Ends the game"""
         self.cancelled = True
         self.put()
 
+class Score(ndb.Model):
+    """Score object"""
+    user = ndb.KeyProperty(required=True, kind='User')
+    date = ndb.DateTimeProperty(required=True)
+    won = ndb.BooleanProperty(required=True)
 
+    def to_form(self):
+        return ScoreForm(user_name=self.user.get().name, won=self.won,
+                         date=str(self.date))
 
 class GameForm(messages.Message):
     """GameForm for outbound game state information"""
@@ -79,3 +104,15 @@ class NewGameForm(messages.Message):
 class MakeMoveForm(messages.Message):
     """Used to make a move in an existing game"""
     position = messages.IntegerField(1, required=True)
+
+
+class ScoreForm(messages.Message):
+    """ScoreForm for outbound Score information"""
+    user_name = messages.StringField(1, required=True)
+    date = messages.StringField(2, required=True)
+    won = messages.BooleanField(3, required=True)
+
+
+class ScoreForms(messages.Message):
+    """Return multiple ScoreForm"""
+    items = messages.MessageField(ScoreForm, 1, repeated=True)

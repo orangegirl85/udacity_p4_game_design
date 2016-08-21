@@ -19,6 +19,20 @@
 <hr/>
 
 <div class="row">
+    <div class="col-sm-3 col-md-3" ng-controller="UserGamesCtrl">
+        <button ng-click="getUserGames('aaa')" class="btn btn-primary">Get User Games</button>
+        <ul ng-if="user_games.length">
+            <li ng-repeat="item in user_games">
+                <span> {{item.date}}</span><br/>
+                <span> {{item.user_name}}</span><br/>
+                <span> {{item.won}}</span><br/>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<hr/>
+<div class="row">
     <div class="col-lg-12">
         <div id="messages" class="alert alert-{{alertStatus}}" ng-show="messages">
             <span ng-bind="messages"></span>

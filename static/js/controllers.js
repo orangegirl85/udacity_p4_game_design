@@ -156,6 +156,43 @@ ticTacToeApp.controllers.controller('NewGameInstanceCtrl', function($scope, $mod
 
 });
 
+
+/**
+ * @ngdoc controller
+ * @name UserGamesCtrl
+ *
+ * @description
+ * ???.
+ *
+ */
+ticTacToeApp.controllers.controller('UserGamesCtrl', function($scope, $log){
+    $scope.user_games = $scope.user_games || {};
+    $scope.getUserGames = function(user_name) {
+        /**
+        * Invokes the tic_tac_toe.get_user_games method.
+        */
+        gapi.client.tic_tac_toe.get_user_games({user_name: user_name}).
+            execute(function (resp) {
+                $scope.$apply(function () {
+                    if (resp.error) {
+                        // The request has failed.
+                        var errorMessage = resp.error.message || '';
+                        $scope.messages = 'Failed to get user games : ' + errorMessage;
+                        $scope.alertStatus = 'warning';
+                        $log.error($scope.messages );
+                    } else {
+                        // The request has succeeded.
+                        $scope.messages = 'Successful';
+                        $scope.alertStatus = 'success';
+                        $scope.user_games = resp.result.items;
+                        $log.info($scope.messages + ' : ' + JSON.stringify(resp.result));
+
+                    }
+                });
+            });
+    };
+});
+
 /**
  * @ngdoc controller
  * @name RootCtrl
