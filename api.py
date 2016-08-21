@@ -4,9 +4,10 @@ This can also contain game logic."""
 
 import endpoints
 from protorpc import remote, messages
+from google.appengine.api import memcache
 
-from models import User, Game, Score
-from models import StringMessage, NewGameForm, GameForm, MakeMoveForm, ScoreForms, UserRankingForm, UserRankingsForm
+from models import User, Game, Score, GameHistory
+from models import StringMessage, NewGameForm, GameForm, MakeMoveForm, ScoreForms, UserRankingsForm, GameHistoryForm, GameHistoryForms
 from utils import get_by_urlsafe
 
 NEW_GAME_REQUEST = endpoints.ResourceContainer(NewGameForm)
@@ -20,6 +21,8 @@ MAKE_MOVE_REQUEST = endpoints.ResourceContainer(
 
 CANCEL_GAME_REQUEST = endpoints.ResourceContainer(
         urlsafe_game_key=messages.StringField(1),)
+
+MEMCACHE_GAME_HISTORY = 'GAME_HISTORY'
 
 @endpoints.api(name='tic_tac_toe', version='v1')
 class TicTacToeApi(remote.Service):
@@ -58,6 +61,8 @@ class TicTacToeApi(remote.Service):
                     'A User with: %s name does not exist!' % request.user_name2)
 
         game = Game.new_game(user1.key, user2.key)
+
+        memcache.delete(MEMCACHE_GAME_HISTORY)
 
         return game.to_form('Good luck playing Tic Tac Toe!')
 
@@ -128,13 +133,23 @@ class TicTacToeApi(remote.Service):
         check_for_winner = self._check_for_winner(game.board)
 
         if check_for_winner:
+            self._cache_game_move(game, request.position, ' %s wins!' % game.current_player )
             game.end_game()
             return game.to_form(' %s wins!' % game.current_player)
         else:
+            self._cache_game_move(game, request.position, 'Next move')
             game.current_player = self._switch_player(game)
             game.put()
             return game.to_form('Next move')
 
+    @endpoints.method(response_message=GameHistoryForms,
+                      path='user/game/history',
+                      name='get_game_history',
+                      http_method='GET')
+    def get_game_history(self, request):
+        """Return the current game state."""
+        aa = memcache.get(MEMCACHE_GAME_HISTORY) or []
+        return GameHistoryForms(items=[bb.to_form() for bb in aa])
 
     def _switch_player(self, game):
         if(game.current_player == 'PLAYER_X') :
@@ -183,6 +198,19 @@ class TicTacToeApi(remote.Service):
             return True
 
         # check if it's a draw...
+
+    @staticmethod
+    def _cache_game_move(game, position, message):
+        """Populates memcache with the actual moves of the Game"""
+        if not game.game_over:
+            history = memcache.get(MEMCACHE_GAME_HISTORY) or []
+            game_history = GameHistory(username=game.current_player, position=position, message=message)
+            #history.append((game.current_player, position, message))
+            history.append(game_history)
+            memcache.set(MEMCACHE_GAME_HISTORY, history)
+
+
+
 
 
 api = endpoints.api_server([TicTacToeApi])

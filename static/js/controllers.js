@@ -307,6 +307,33 @@ ticTacToeApp.controllers.controller('RootCtrl', function ($scope, $log, localSto
 
     }
 
+    $scope.gameHistory = function() {
+        $scope.history = $scope.history || [];
+        /**
+        * Invokes the tic_tac_toe.cancel_game method.
+        */
+        gapi.client.tic_tac_toe.get_game_history().
+            execute(function (resp) {
+                $scope.$apply(function () {
+                    if (resp.error) {
+                        // The request has failed.
+                        var errorMessage = resp.error.message || '';
+                        $scope.messages = 'Failed to get game history : ' + errorMessage;
+                        $scope.alertStatus = 'warning';
+                        $log.error($scope.messages );
+                    } else {
+                        // The request has succeeded.
+                        //$scope.messages = resp.result.message;
+                        $scope.alertStatus = 'success';
+                        $scope.history = resp.result.items;
+                        $log.info($scope.messages + ' : ' + JSON.stringify(resp.result));
+
+                    }
+                });
+            });
+
+    }
+
     $scope.makeMove = function (position) {
 
         $scope.table.position = position;

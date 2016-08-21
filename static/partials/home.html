@@ -60,6 +60,14 @@
       <div id="X" ng-class="{ 'current-player': current_player=='PLAYER_X'}">Player X</div>
       <div id="O" ng-class="{ 'current-player': current_player=='PLAYER_O'}">Player O</div>
         <button ng-click="cancelGame(currentGameKey)" class="btn btn-warning">Cancel</button>
+        <button ng-click="gameHistory()" class="btn btn-warning">Game History</button>
+        <ul ng-if="history.length">
+            <li ng-repeat="item in history">
+                <span> {{item.username}}</span><br/>
+                <span> {{item.position}}</span><br/>
+                <span> {{item.message}}</span><br/>
+            </li>
+        </ul>
     </div>
     <table>
       <tr>

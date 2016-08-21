@@ -15,6 +15,16 @@ class User(ndb.Model):
     def to_form(self):
         return UserRankingForm(user_name=self.name, score=self.score)
 
+
+class GameHistory(ndb.Model):
+    """User profile"""
+    username = ndb.StringProperty(required=True)
+    position =ndb.IntegerProperty(required=True)
+    message = ndb.StringProperty(required=True)
+
+    def to_form(self):
+        return GameHistoryForm(username=self.username, position=self.position, message=self.message)
+
 class StringMessage(messages.Message):
     """StringMessage-- outbound (single) string message"""
     message = messages.StringField(1, required=True)
@@ -127,6 +137,17 @@ class UserRankingForm(messages.Message):
 class UserRankingsForm(messages.Message):
     """Return multiple UserRankingsForms"""
     items = messages.MessageField(UserRankingForm, 1, repeated=True)
+
+
+class GameHistoryForm(messages.Message):
+    """ScoreForm for outbound Score information"""
+    username = messages.StringField(1, required=True)
+    position = messages.IntegerField(2, required=True)
+    message = messages.StringField(3, required=True)
+
+class GameHistoryForms(messages.Message):
+    """Return multiple ScoreForm"""
+    items = messages.MessageField(GameHistoryForm, 1, repeated=True)
 
 class ScoreForm(messages.Message):
     """ScoreForm for outbound Score information"""
