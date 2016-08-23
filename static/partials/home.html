@@ -19,15 +19,8 @@
 <hr/>
 
 <div class="row">
-    <div class="col-sm-3 col-md-3" ng-controller="UserGamesCtrl">
-        <button ng-click="getUserGames('aaa')" class="btn btn-primary">Get User Games</button>
-        <ul ng-if="user_games.length">
-            <li ng-repeat="item in user_games">
-                <span> {{item.date}}</span><br/>
-                <span> {{item.user_name}}</span><br/>
-                <span> {{item.won}}</span><br/>
-            </li>
-        </ul>
+    <div class="col-sm-3 col-md-3" ng-controller="ModalUserGamesCtrl">
+        <button ng-click="getUserGames()" class="btn btn-primary">Get User Games</button>
     </div>
 </div>
 
