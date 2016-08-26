@@ -23,6 +23,9 @@ handlers:       # static then dynamic
 - url: /_ah/spi/.*
   script: api.api
 
+- url: /crons/send_reminder
+  script: main.app
+
 
 libraries:
 
