@@ -6,10 +6,11 @@ from datetime import date, datetime
 from google.appengine.ext import ndb
 from protorpc import messages
 
+
 class User(ndb.Model):
     """User profile"""
     name = ndb.StringProperty(required=True)
-    email =ndb.StringProperty()
+    email = ndb.StringProperty()
     score = ndb.IntegerProperty(default=0)
 
     def to_form(self):
@@ -17,17 +18,14 @@ class User(ndb.Model):
 
 
 class GameHistory(ndb.Model):
-    """User profile"""
+    """GameHistory object"""
     username = ndb.StringProperty(required=True)
-    position =ndb.IntegerProperty(required=True)
+    position = ndb.IntegerProperty(required=True)
     message = ndb.StringProperty(required=True)
 
     def to_form(self):
         return GameHistoryForm(username=self.username, position=self.position, message=self.message)
 
-class StringMessage(messages.Message):
-    """StringMessage-- outbound (single) string message"""
-    message = messages.StringField(1, required=True)
 
 class Game(ndb.Model):
     """Game object"""
@@ -71,7 +69,7 @@ class Game(ndb.Model):
             self._add_game_to_score(self.user2, won)
         else:
             if self.current_player == 'PLAYER_X':
-                self._add_game_to_score(self.user1, True,)
+                self._add_game_to_score(self.user1, True)
                 self._add_game_to_score(self.user2, False)
                 self._update_user_score(self.user1, 1)
                 self._update_user_score(self.user2, -1)
@@ -95,6 +93,7 @@ class Game(ndb.Model):
         self.cancelled = True
         self.put()
 
+
 class Score(ndb.Model):
     """Score object"""
     user = ndb.KeyProperty(required=True, kind='User')
@@ -104,6 +103,7 @@ class Score(ndb.Model):
     def to_form(self):
         return ScoreForm(user_name=self.user.get().name, won=self.won,
                          date=str(self.date))
+
 
 class GameForm(messages.Message):
     """GameForm for outbound game state information"""
@@ -145,9 +145,11 @@ class GameHistoryForm(messages.Message):
     position = messages.IntegerField(2, required=True)
     message = messages.StringField(3, required=True)
 
+
 class GameHistoryForms(messages.Message):
     """Return multiple ScoreForm"""
     items = messages.MessageField(GameHistoryForm, 1, repeated=True)
+
 
 class ScoreForm(messages.Message):
     """ScoreForm for outbound Score information"""
@@ -159,3 +161,8 @@ class ScoreForm(messages.Message):
 class ScoreForms(messages.Message):
     """Return multiple ScoreForm"""
     items = messages.MessageField(ScoreForm, 1, repeated=True)
+
+
+class StringMessage(messages.Message):
+    """StringMessage-- outbound (single) string message"""
+    message = messages.StringField(1, required=True)
