@@ -7,29 +7,31 @@ from protorpc import remote, messages
 from google.appengine.api import memcache
 
 from models import User, Game, Score, GameHistory
-from models import StringMessage, NewGameForm, GameForm, MakeMoveForm, ScoreForms, UserRankingsForm, GameHistoryForm, GameHistoryForms
+from models import StringMessage, NewGameForm, GameForm, MakeMoveForm, ScoreForms, UserRankingsForm, GameHistoryForm, \
+    GameHistoryForms
 from utils import get_by_urlsafe
 
 NEW_GAME_REQUEST = endpoints.ResourceContainer(NewGameForm)
 USER_REQUEST = endpoints.ResourceContainer(user_name=messages.StringField(1),
                                            email=messages.StringField(2))
 GET_GAME_REQUEST = endpoints.ResourceContainer(
-        urlsafe_game_key=messages.StringField(1),)
+    urlsafe_game_key=messages.StringField(1), )
 MAKE_MOVE_REQUEST = endpoints.ResourceContainer(
     MakeMoveForm,
-    urlsafe_game_key=messages.StringField(1),)
+    urlsafe_game_key=messages.StringField(1), )
 
 CANCEL_GAME_REQUEST = endpoints.ResourceContainer(
-        urlsafe_game_key=messages.StringField(1),)
+    urlsafe_game_key=messages.StringField(1), )
 GAME_HISTORY_REQUEST = endpoints.ResourceContainer(
-        urlsafe_game_key=messages.StringField(1),)
-
+    urlsafe_game_key=messages.StringField(1), )
 
 MEMCACHE_GAME_HISTORY_PREFIX = 'GAME_HISTORY'
+
 
 @endpoints.api(name='tic_tac_toe', version='v1')
 class TicTacToeApi(remote.Service):
     """Game API"""
+
     @endpoints.method(request_message=USER_REQUEST,
                       response_message=StringMessage,
                       path='user',
@@ -39,15 +41,14 @@ class TicTacToeApi(remote.Service):
         """Create a User. Requires a unique username"""
         if User.query(User.name == request.user_name).get():
             raise endpoints.ConflictException(
-                    'A User with that name already exists!')
+                'A User with that name already exists!')
         if User.query(User.email == request.email).get():
             raise endpoints.ConflictException(
-                    'A User with that email already exists!')
+                'A User with that email already exists!')
         user = User(name=request.user_name, email=request.email)
         user.put()
         return StringMessage(message='User {} created!'.format(
-                request.user_name))
-
+            request.user_name))
 
     @endpoints.method(request_message=NEW_GAME_REQUEST,
                       response_message=GameForm,
@@ -59,16 +60,16 @@ class TicTacToeApi(remote.Service):
         user1 = User.query(User.name == request.user_name1).get()
         if not user1:
             raise endpoints.NotFoundException(
-                    'A User with: %s name does not exist!' % request.user_name1 )
+                'A User with: %s name does not exist!' % request.user_name1)
 
         user2 = User.query(User.name == request.user_name2).get()
         if not user2:
             raise endpoints.NotFoundException(
-                    'A User with: %s name does not exist!' % request.user_name2)
+                'A User with: %s name does not exist!' % request.user_name2)
 
         if (request.user_name1 == request.user_name2):
             raise endpoints.ConflictException(
-                    'Please choose 2 different users!')
+                'Please choose 2 different users!')
 
         game = Game.new_game(user1.key, user2.key)
 
@@ -97,10 +98,9 @@ class TicTacToeApi(remote.Service):
         user = User.query(User.name == request.user_name).get()
         if not user:
             raise endpoints.NotFoundException(
-                    'A User with that name does not exist!')
+                'A User with that name does not exist!')
         scores = Score.query(Score.user == user.key)
         return ScoreForms(items=[score.to_form() for score in scores])
-
 
     @endpoints.method(response_message=UserRankingsForm,
                       path='user/ranking',
@@ -136,17 +136,16 @@ class TicTacToeApi(remote.Service):
 
         if (game.board[request.position] != ''):
             raise endpoints.ConflictException(
-                    'That cell is taken! Please choose another one!')
+                'That cell is taken! Please choose another one!')
         if game.game_over:
             return game.to_form('Game already over!')
-
 
         game.board[request.position] = game.current_player
 
         check_for_winner = self._check_for_winner(game.board)
 
         if check_for_winner:
-            self._cache_game_move(game, request.position, ' %s wins!' % game.current_player, request.urlsafe_game_key )
+            self._cache_game_move(game, request.position, ' %s wins!' % game.current_player, request.urlsafe_game_key)
             game.end_game()
             return game.to_form(' %s wins!' % game.current_player)
         else:
@@ -175,15 +174,16 @@ class TicTacToeApi(remote.Service):
         return GameHistoryForms(items=[history.to_form() for history in game_history])
 
     def _switch_player(self, game):
-        if(game.current_player == 'PLAYER_X') :
+        if (game.current_player == 'PLAYER_X'):
             game.current_player = 'PLAYER_O'
         else:
             game.current_player = 'PLAYER_X'
         return game.current_player
 
-    def _we_have_a_winner(self, a,b,c, board):
+    def _we_have_a_winner(self, a, b, c, board):
 
-        if (str(board[a]) == str(board[b])) & (str(board[b]) == str(board[c])) & ((str(board[a]) != str('')) | (str(board[b]) != str('')) | (str(board[c]) != str(''))):
+        if (str(board[a]) == str(board[b])) & (str(board[b]) == str(board[c])) & (
+                (str(board[a]) != str('')) | (str(board[b]) != str('')) | (str(board[c]) != str(''))):
             return True
 
         else:
@@ -195,7 +195,7 @@ class TicTacToeApi(remote.Service):
         b = 1
         c = 2
         while (c < len(board)):
-            if (self._we_have_a_winner(a,b,c,board)):
+            if (self._we_have_a_winner(a, b, c, board)):
                 return True
             a += 3
             b += 3
@@ -206,20 +206,19 @@ class TicTacToeApi(remote.Service):
         b = 3
         c = 6
         while (c < len(board)):
-            if (self._we_have_a_winner(a,b,c,board)):
+            if (self._we_have_a_winner(a, b, c, board)):
                 return True
             a += 1
             b += 1
             c += 1
 
         # check diagonal right
-        if (self._we_have_a_winner(0,4,8,board)):
+        if (self._we_have_a_winner(0, 4, 8, board)):
             return True
 
         # check diagonal left
-        if (self._we_have_a_winner(2,4,6,board)):
+        if (self._we_have_a_winner(2, 4, 6, board)):
             return True
-
 
     @staticmethod
     def _cache_game_move(game, position, message, urlsafe_game_key):
@@ -229,9 +228,6 @@ class TicTacToeApi(remote.Service):
             game_history = GameHistory(username=game.current_player, position=position, message=message)
             history.append(game_history)
             memcache.set(MEMCACHE_GAME_HISTORY_PREFIX + urlsafe_game_key, history)
-
-
-
 
 
 api = endpoints.api_server([TicTacToeApi])

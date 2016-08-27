@@ -10,7 +10,7 @@
 
 2. Instructions to play the game:
    - Create 2 users with Create User Button
-   - Create A New Game with the 2 users previously created, Show Game button will appear
+   - Create A New Game with the 2 users previously created (User1 will be PLAYER_X, User 2 will be PLAYER_O), Show Game button will appear
    - Click Show Game and make some moves
    - While playing the game, you can click Show History in order to show all the moves that have been made
    - You can cancel a game by clicking Cancel Game button

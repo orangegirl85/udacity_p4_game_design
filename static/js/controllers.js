@@ -156,11 +156,17 @@ ticTacToeApp.controllers.controller('NewGameInstanceCtrl', function($scope, $mod
 
 });
 
-
+/**
+ * @ngdoc controller
+ * @name ModalUserGamesCtrl
+ *
+ * @description
+ * Controller for showing User Games Modal.
+ *
+ */
 
 ticTacToeApp.controllers.controller('ModalUserGamesCtrl', function($scope, $modal, $log){
     $scope.getUserGames = function() {
-        //$scope.$emit('remove-table');
         var modalInstance = $modal.open({
           templateUrl: '/partials/user-games.html',
           controller: 'UserGamesInstanceCtrl'
@@ -176,10 +182,10 @@ ticTacToeApp.controllers.controller('ModalUserGamesCtrl', function($scope, $moda
 
 /**
  * @ngdoc controller
- * @name UserGamesCtrl
+ * @name UserGamesInstanceCtrl
  *
  * @description
- * ???.
+ * Controller for showing user games.
  *
  */
 ticTacToeApp.controllers.controller('UserGamesInstanceCtrl', function($scope, $log){
@@ -191,7 +197,7 @@ ticTacToeApp.controllers.controller('UserGamesInstanceCtrl', function($scope, $l
                 return;
             }
             /**
-             * Invokes the tic_tac_toe.create_user method.
+             * Invokes the tic_tac_toe.get_user_games method.
              */
             gapi.client.tic_tac_toe.get_user_games($scope.user).
                 execute(function (resp) {
@@ -217,30 +223,7 @@ ticTacToeApp.controllers.controller('UserGamesInstanceCtrl', function($scope, $l
    $scope.close = function() {
      $modalInstance.close();
    }
-//    $scope.getUserGames = function(user_name) {
-//        /**
-//        * Invokes the tic_tac_toe.get_user_games method.
-//        */
-//        gapi.client.tic_tac_toe.get_user_games({user_name: user_name}).
-//            execute(function (resp) {
-//                $scope.$apply(function () {
-//                    if (resp.error) {
-//                        // The request has failed.
-//                        var errorMessage = resp.error.message || '';
-//                        $scope.messages = 'Failed to get user games : ' + errorMessage;
-//                        $scope.alertStatus = 'warning';
-//                        $log.error($scope.messages );
-//                    } else {
-//                        // The request has succeeded.
-//                        $scope.messages = 'Successful';
-//                        $scope.alertStatus = 'success';
-//                        $scope.user_games = resp.result.items;
-//                        $log.info($scope.messages + ' : ' + JSON.stringify(resp.result));
-//
-//                    }
-//                });
-//            });
-//    };
+
 });
 
 
@@ -249,7 +232,7 @@ ticTacToeApp.controllers.controller('UserGamesInstanceCtrl', function($scope, $l
  * @name UserRankingsCtrl
  *
  * @description
- * ???.
+ * Controller for showing User Rankings.
  *
  */
 ticTacToeApp.controllers.controller('UserRankingsCtrl', function($scope, $log){
@@ -360,7 +343,7 @@ ticTacToeApp.controllers.controller('RootCtrl', function ($scope, $log, localSto
     $scope.gameHistory = function(urlsafe_key) {
         $scope.history = $scope.history || [];
         /**
-        * Invokes the tic_tac_toe.cancel_game method.
+        * Invokes the tic_tac_toe.get_game_history method.
         */
         gapi.client.tic_tac_toe.get_game_history({urlsafe_game_key: urlsafe_key}).
             execute(function (resp) {
@@ -373,7 +356,6 @@ ticTacToeApp.controllers.controller('RootCtrl', function ($scope, $log, localSto
                         $log.error($scope.messages );
                     } else {
                         // The request has succeeded.
-                        //$scope.messages = resp.result.message;
                         $scope.alertStatus = 'success';
                         $scope.history = resp.result.items;
                         $log.info($scope.messages + ' : ' + JSON.stringify(resp.result));

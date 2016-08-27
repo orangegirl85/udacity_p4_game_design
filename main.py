@@ -36,8 +36,6 @@ class SendReminderEmail(webapp2.RequestHandler):
                            body.format(user22.name, user11.name))
 
 
-
-
 app = webapp2.WSGIApplication([
     ('/crons/send_reminder', SendReminderEmail)
 ], debug=True)

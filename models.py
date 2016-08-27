@@ -129,7 +129,7 @@ class MakeMoveForm(messages.Message):
 
 
 class UserRankingForm(messages.Message):
-    """UserRankingForm for outbound Score information"""
+    """UserRankingForm for outbound User information"""
     user_name = messages.StringField(1, required=True)
     score = messages.IntegerField(2, required=True)
 
@@ -140,14 +140,14 @@ class UserRankingsForm(messages.Message):
 
 
 class GameHistoryForm(messages.Message):
-    """ScoreForm for outbound Score information"""
+    """GameHistoryForm for outbound GameHistory information"""
     username = messages.StringField(1, required=True)
     position = messages.IntegerField(2, required=True)
     message = messages.StringField(3, required=True)
 
 
 class GameHistoryForms(messages.Message):
-    """Return multiple ScoreForm"""
+    """Return multiple GameHistoryForm"""
     items = messages.MessageField(GameHistoryForm, 1, repeated=True)
 
 
