@@ -21,8 +21,11 @@ MAKE_MOVE_REQUEST = endpoints.ResourceContainer(
 
 CANCEL_GAME_REQUEST = endpoints.ResourceContainer(
         urlsafe_game_key=messages.StringField(1),)
+GAME_HISTORY_REQUEST = endpoints.ResourceContainer(
+        urlsafe_game_key=messages.StringField(1),)
 
-MEMCACHE_GAME_HISTORY = 'GAME_HISTORY'
+
+MEMCACHE_GAME_HISTORY_PREFIX = 'GAME_HISTORY'
 
 @endpoints.api(name='tic_tac_toe', version='v1')
 class TicTacToeApi(remote.Service):
@@ -37,6 +40,9 @@ class TicTacToeApi(remote.Service):
         if User.query(User.name == request.user_name).get():
             raise endpoints.ConflictException(
                     'A User with that name already exists!')
+        if User.query(User.email == request.email).get():
+            raise endpoints.ConflictException(
+                    'A User with that email already exists!')
         user = User(name=request.user_name, email=request.email)
         user.put()
         return StringMessage(message='User {} created!'.format(
@@ -60,9 +66,11 @@ class TicTacToeApi(remote.Service):
             raise endpoints.NotFoundException(
                     'A User with: %s name does not exist!' % request.user_name2)
 
-        game = Game.new_game(user1.key, user2.key)
+        if (request.user_name1 == request.user_name2):
+            raise endpoints.ConflictException(
+                    'Please choose 2 different users!')
 
-        memcache.delete(MEMCACHE_GAME_HISTORY)
+        game = Game.new_game(user1.key, user2.key)
 
         return game.to_form('Good luck playing Tic Tac Toe!')
 
@@ -125,31 +133,46 @@ class TicTacToeApi(remote.Service):
     def make_move(self, request):
         """Makes a move. Returns a game state with message"""
         game = get_by_urlsafe(request.urlsafe_game_key, Game)
+
+        if (game.board[request.position] != ''):
+            raise endpoints.ConflictException(
+                    'That cell is taken! Please choose another one!')
         if game.game_over:
             return game.to_form('Game already over!')
+
 
         game.board[request.position] = game.current_player
 
         check_for_winner = self._check_for_winner(game.board)
 
         if check_for_winner:
-            self._cache_game_move(game, request.position, ' %s wins!' % game.current_player )
+            self._cache_game_move(game, request.position, ' %s wins!' % game.current_player, request.urlsafe_game_key )
             game.end_game()
             return game.to_form(' %s wins!' % game.current_player)
         else:
-            self._cache_game_move(game, request.position, 'Next move')
-            game.current_player = self._switch_player(game)
-            game.put()
-            return game.to_form('Next move')
+            board_is_full = True
+            for cell in game.board:
+                if cell == '':
+                    board_is_full = False
+            if board_is_full:
+                self._cache_game_move(game, request.position, 'Table Full', request.urlsafe_game_key)
+                game.end_game(True)
+                return game.to_form('Table full! It\'s a draw!')
+            else:
+                self._cache_game_move(game, request.position, 'Next move', request.urlsafe_game_key)
+                game.current_player = self._switch_player(game)
+                game.put()
+                return game.to_form('Next move')
 
-    @endpoints.method(response_message=GameHistoryForms,
-                      path='user/game/history',
+    @endpoints.method(request_message=GAME_HISTORY_REQUEST,
+                      response_message=GameHistoryForms,
+                      path='game/history/{urlsafe_game_key}',
                       name='get_game_history',
                       http_method='GET')
     def get_game_history(self, request):
         """Return the current game state."""
-        aa = memcache.get(MEMCACHE_GAME_HISTORY) or []
-        return GameHistoryForms(items=[bb.to_form() for bb in aa])
+        game_history = memcache.get(MEMCACHE_GAME_HISTORY_PREFIX + request.urlsafe_game_key) or []
+        return GameHistoryForms(items=[history.to_form() for history in game_history])
 
     def _switch_player(self, game):
         if(game.current_player == 'PLAYER_X') :
@@ -197,17 +220,15 @@ class TicTacToeApi(remote.Service):
         if (self._we_have_a_winner(2,4,6,board)):
             return True
 
-        # check if it's a draw...
 
     @staticmethod
-    def _cache_game_move(game, position, message):
+    def _cache_game_move(game, position, message, urlsafe_game_key):
         """Populates memcache with the actual moves of the Game"""
         if not game.game_over:
-            history = memcache.get(MEMCACHE_GAME_HISTORY) or []
+            history = memcache.get(MEMCACHE_GAME_HISTORY_PREFIX + urlsafe_game_key) or []
             game_history = GameHistory(username=game.current_player, position=position, message=message)
-            #history.append((game.current_player, position, message))
             history.append(game_history)
-            memcache.set(MEMCACHE_GAME_HISTORY, history)
+            memcache.set(MEMCACHE_GAME_HISTORY_PREFIX + urlsafe_game_key, history)
 
 
 

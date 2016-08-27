@@ -8,6 +8,15 @@
 1.  (Optional) Generate your client library(ies) with the endpoints tool.
  Deploy your application.
 
+2. Instructions to play the game:
+   - Create 2 users with Create User Button
+   - Create A New Game with the 2 users previously created, Show Game button will appear
+   - Click Show Game and make some moves
+   - While playing the game, you can click Show History in order to show all the moves that have been made
+   - You can cancel a game by clicking Cancel Game button
+   - You can see a User games by clicking Get User Games
+   - You can see all Users rankings by clicking Get User Rankings
+
 
 ##Game Description:
 Tic Tac Toe is a simple 2-player game. There is a 3x3 table. First player selects
@@ -108,9 +117,9 @@ reflected in the game history.
     If this causes a game to end, a corresponding Score entity will be created.
 
  - **get_game_history**
-    - Path: 'user/game/history'
+    - Path: 'game/history/{urlsafe_game_key}'
     - Method: GET
-    - Parameters: None
+    - Parameters: urlsafe_game_key
     - Returns: GameHistoryForms with all the moves that have been played for the current game.
     - Description: Gets the history of moves for current game stored in memcache.
 

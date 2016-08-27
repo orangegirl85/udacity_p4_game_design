@@ -357,12 +357,12 @@ ticTacToeApp.controllers.controller('RootCtrl', function ($scope, $log, localSto
 
     }
 
-    $scope.gameHistory = function() {
+    $scope.gameHistory = function(urlsafe_key) {
         $scope.history = $scope.history || [];
         /**
         * Invokes the tic_tac_toe.cancel_game method.
         */
-        gapi.client.tic_tac_toe.get_game_history().
+        gapi.client.tic_tac_toe.get_game_history({urlsafe_game_key: urlsafe_key}).
             execute(function (resp) {
                 $scope.$apply(function () {
                     if (resp.error) {
