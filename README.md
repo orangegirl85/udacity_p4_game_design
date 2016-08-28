@@ -141,7 +141,7 @@ reflected in the game history.
 ##Forms Included:
  - **GameForm**
     - Representation of a Game's state (urlsafe_key, message, user_name1, user_name2,
-    current_player, board, cancelled flag, game_over flag). A board is a list of Strings initialized
+    current_player, board, cancelled flag, game_over flag, email_reminder_sent flag). A board is a list of Strings initialized
     with 9 empty strings, and as a player makes a move, the position is filled with PLAYER_X or
      PLAYER_O value.
  - **NewGameForm**

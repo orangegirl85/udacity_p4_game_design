@@ -7,23 +7,28 @@ from protorpc import remote, messages
 from google.appengine.api import memcache
 
 from models import User, Game, Score, GameHistory
-from models import StringMessage, NewGameForm, GameForm, MakeMoveForm, ScoreForms, UserRankingsForm, GameHistoryForm, \
+from models import (
+    StringMessage,
+    NewGameForm,
+    GameForm,
+    MakeMoveForm,
+    ScoreForms,
+    UserRankingsForm,
     GameHistoryForms
+)
 from utils import get_by_urlsafe
 
 NEW_GAME_REQUEST = endpoints.ResourceContainer(NewGameForm)
 USER_REQUEST = endpoints.ResourceContainer(user_name=messages.StringField(1),
                                            email=messages.StringField(2))
-GET_GAME_REQUEST = endpoints.ResourceContainer(
-    urlsafe_game_key=messages.StringField(1), )
+
 MAKE_MOVE_REQUEST = endpoints.ResourceContainer(
     MakeMoveForm,
     urlsafe_game_key=messages.StringField(1), )
 
-CANCEL_GAME_REQUEST = endpoints.ResourceContainer(
+GAME_REQUEST = endpoints.ResourceContainer(
     urlsafe_game_key=messages.StringField(1), )
-GAME_HISTORY_REQUEST = endpoints.ResourceContainer(
-    urlsafe_game_key=messages.StringField(1), )
+
 
 MEMCACHE_GAME_HISTORY_PREFIX = 'GAME_HISTORY'
 
@@ -75,7 +80,7 @@ class TicTacToeApi(remote.Service):
 
         return game.to_form('Good luck playing Tic Tac Toe!')
 
-    @endpoints.method(request_message=GET_GAME_REQUEST,
+    @endpoints.method(request_message=GAME_REQUEST,
                       response_message=GameForm,
                       path='game/{urlsafe_game_key}',
                       name='get_game',
@@ -111,7 +116,7 @@ class TicTacToeApi(remote.Service):
         rankings = User.query().order(-User.score)
         return UserRankingsForm(items=[ranking.to_form() for ranking in rankings])
 
-    @endpoints.method(request_message=CANCEL_GAME_REQUEST,
+    @endpoints.method(request_message=GAME_REQUEST,
                       response_message=GameForm,
                       path='game/cancel/{urlsafe_game_key}',
                       name='cancel_game',
@@ -120,6 +125,8 @@ class TicTacToeApi(remote.Service):
         """Return the current game state."""
         game = get_by_urlsafe(request.urlsafe_game_key, Game)
         if game:
+            if game.game_over:
+                return game.to_form('Game already over!')
             game.cancel_game()
             return game.to_form('Game has been cancelled!')
         else:
@@ -163,7 +170,7 @@ class TicTacToeApi(remote.Service):
                 game.put()
                 return game.to_form('Next move')
 
-    @endpoints.method(request_message=GAME_HISTORY_REQUEST,
+    @endpoints.method(request_message=GAME_REQUEST,
                       response_message=GameHistoryForms,
                       path='game/history/{urlsafe_game_key}',
                       name='get_game_history',

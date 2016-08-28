@@ -6,6 +6,8 @@ Reflect on My Design
 - I've added current_player property on Game's model in order to know which player needs to make a move.
 - I've added board property on Game's model in order to keep track of the moves that have been made in the game.
 - I've added cancelled property on Game's model in order to determine is a game has been cancelled or not.
+- I've added email_reminder_sent property on Game's model in order to send (via cron) only once an email to a user that
+ has played in a cancelled game.
 - When a game ends I've added the game to Score model and updated User's score.
 
 2. What were some of the trade-offs or struggles you faced when implementing the new game logic?

@@ -2,7 +2,7 @@
 entities used by the Game. Because these classes are also regular Python
 classes they can include methods (such as 'to_form' and 'new_game')."""
 
-from datetime import date, datetime
+from datetime import datetime
 from google.appengine.ext import ndb
 from protorpc import messages
 
@@ -35,6 +35,7 @@ class Game(ndb.Model):
     current_player = ndb.StringProperty(default='PLAYER_X')
     board = ndb.StringProperty(repeated=True)
     cancelled = ndb.BooleanProperty(required=True, default=False)
+    email_reminder_sent = ndb.BooleanProperty(default=False)
 
     @classmethod
     def new_game(cls, user1, user2):
