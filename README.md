@@ -45,6 +45,7 @@ A table looks like this:
 
 0,1,2,3,4,5,6,7,8 are the positions that is send to the API when a user makes a move. This number is also
 reflected in the game history.
+When a game ends and it isn't a draw, the user that wins receives 1 point, the user that looses receives -1 point.
 
 ##Files Included:
  - static/css/main.css: Frontend styling.
@@ -67,7 +68,7 @@ reflected in the game history.
  - **create_user**
     - Path: 'user'
     - Method: POST
-    - Parameters: user_name, email (required)
+    - Parameters: user_name (required), email (optional)
     - Returns: Message confirming creation of the User.
     - Description: Creates a new User. user_name provided must be unique. Will
     raise a ConflictException if a User with that user_name already exists.
@@ -91,8 +92,8 @@ reflected in the game history.
     - Path: 'game/user/{user_name}'
     - Method: GET
     - Parameters: user_name
-    - Returns: ScoreForms with all the games the user had played and if he won or lost.
-    - Description: Returns all the games the user had played and if he won or lost.
+    - Returns: GameForms with all the active games the user is playing.
+    - Description: Returns all the active games the user is playing.
 
  - **get_user_rankings**
     - Path: 'user/ranking'
@@ -135,8 +136,6 @@ reflected in the game history.
  - **Game**
     - Stores unique game states. Associated with User model via KeyProperty.
 
- - **Score**
-    - Records completed games. Associated with Users model via KeyProperty.
 
 ##Forms Included:
  - **GameForm**
@@ -144,6 +143,8 @@ reflected in the game history.
     current_player, board, cancelled flag, game_over flag, email_reminder_sent flag). A board is a list of Strings initialized
     with 9 empty strings, and as a player makes a move, the position is filled with PLAYER_X or
      PLAYER_O value.
+ - **GameForms**
+    - Multiple FameForm container.
  - **NewGameForm**
     - Used to create a new game (user_name1, user_name2)
  - **MakeMoveForm**
@@ -156,10 +157,6 @@ reflected in the game history.
     - Representation of a game history(username, position, message).
  - **GameHistoryForms**
     - Multiple GameHistoryForm container.
- - **ScoreForm**
-    - Representation of a completed game's Score (user_name, date, won flag).
- - **ScoreForms**
-    - Multiple ScoreForm container.
  - **StringMessage**
     - General purpose String container.
 

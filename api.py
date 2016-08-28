@@ -5,14 +5,15 @@ This can also contain game logic."""
 import endpoints
 from protorpc import remote, messages
 from google.appengine.api import memcache
+from google.appengine.ext import ndb
 
-from models import User, Game, Score, GameHistory
+from models import User, Game, GameHistory
 from models import (
     StringMessage,
     NewGameForm,
     GameForm,
     MakeMoveForm,
-    ScoreForms,
+    GameForms,
     UserRankingsForm,
     GameHistoryForms
 )
@@ -94,7 +95,7 @@ class TicTacToeApi(remote.Service):
             raise endpoints.NotFoundException('Game not found!')
 
     @endpoints.method(request_message=USER_REQUEST,
-                      response_message=ScoreForms,
+                      response_message=GameForms,
                       path='game/user/{user_name}',
                       name='get_user_games',
                       http_method='GET')
@@ -104,8 +105,12 @@ class TicTacToeApi(remote.Service):
         if not user:
             raise endpoints.NotFoundException(
                 'A User with that name does not exist!')
-        scores = Score.query(Score.user == user.key)
-        return ScoreForms(items=[score.to_form() for score in scores])
+        find_user = ndb.OR(
+            Game.user1 == user.key,
+            Game.user2 == user.key)
+        user_games = Game.query(find_user, Game.game_over == False, Game.cancelled == False)
+
+        return GameForms(items=[user_game.to_form('') for user_game in user_games])
 
     @endpoints.method(response_message=UserRankingsForm,
                       path='user/ranking',

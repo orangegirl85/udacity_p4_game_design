@@ -188,7 +188,7 @@ ticTacToeApp.controllers.controller('ModalUserGamesCtrl', function($scope, $moda
  * Controller for showing user games.
  *
  */
-ticTacToeApp.controllers.controller('UserGamesInstanceCtrl', function($scope, $log){
+ticTacToeApp.controllers.controller('UserGamesInstanceCtrl', function($scope, $modalInstance, $log){
     $scope.user_games = $scope.user_games || {};
     $scope.user = $scope.user || {};
 
@@ -213,6 +213,7 @@ ticTacToeApp.controllers.controller('UserGamesInstanceCtrl', function($scope, $l
                             $scope.messages = 'Successful';
                             $scope.alertStatus = 'success';
                             $scope.user = {};
+                            console.log(resp.result.items);
                             $scope.user_games = resp.result.items;
                             $log.info($scope.messages + ' : ' + JSON.stringify(resp.result));
                         }

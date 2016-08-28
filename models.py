@@ -2,7 +2,6 @@
 entities used by the Game. Because these classes are also regular Python
 classes they can include methods (such as 'to_form' and 'new_game')."""
 
-from datetime import datetime
 from google.appengine.ext import ndb
 from protorpc import messages
 
@@ -64,25 +63,13 @@ class Game(ndb.Model):
         self.game_over = True
         self.put()
 
-        if draw:
-            won = False
-            self._add_game_to_score(self.user1, won)
-            self._add_game_to_score(self.user2, won)
-        else:
+        if not draw:
             if self.current_player == 'PLAYER_X':
-                self._add_game_to_score(self.user1, True)
-                self._add_game_to_score(self.user2, False)
                 self._update_user_score(self.user1, 1)
                 self._update_user_score(self.user2, -1)
             else:
-                self._add_game_to_score(self.user1, False)
-                self._add_game_to_score(self.user2, True)
                 self._update_user_score(self.user1, -1)
                 self._update_user_score(self.user2, 1)
-
-    def _add_game_to_score(self, user, won):
-        score = Score(user=user, date=datetime.today(), won=won)
-        score.put()
 
     def _update_user_score(self, user, score):
         user11 = User.query(User.name == user.get().name).get()
@@ -95,17 +82,6 @@ class Game(ndb.Model):
         self.put()
 
 
-class Score(ndb.Model):
-    """Score object"""
-    user = ndb.KeyProperty(required=True, kind='User')
-    date = ndb.DateTimeProperty(required=True)
-    won = ndb.BooleanProperty(required=True)
-
-    def to_form(self):
-        return ScoreForm(user_name=self.user.get().name, won=self.won,
-                         date=str(self.date))
-
-
 class GameForm(messages.Message):
     """GameForm for outbound game state information"""
     urlsafe_key = messages.StringField(1, required=True)
@@ -116,6 +92,11 @@ class GameForm(messages.Message):
     current_player = messages.StringField(6, required=True)
     board = messages.StringField(7, repeated=True)
     cancelled = messages.BooleanField(8, required=True)
+
+
+class GameForms(messages.Message):
+    """Return multiple GameForm"""
+    items = messages.MessageField(GameForm, 1, repeated=True)
 
 
 class NewGameForm(messages.Message):
@@ -150,18 +131,6 @@ class GameHistoryForm(messages.Message):
 class GameHistoryForms(messages.Message):
     """Return multiple GameHistoryForm"""
     items = messages.MessageField(GameHistoryForm, 1, repeated=True)
-
-
-class ScoreForm(messages.Message):
-    """ScoreForm for outbound Score information"""
-    user_name = messages.StringField(1, required=True)
-    date = messages.StringField(2, required=True)
-    won = messages.BooleanField(3, required=True)
-
-
-class ScoreForms(messages.Message):
-    """Return multiple ScoreForm"""
-    items = messages.MessageField(ScoreForm, 1, repeated=True)
 
 
 class StringMessage(messages.Message):
